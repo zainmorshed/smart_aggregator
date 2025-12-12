@@ -1,0 +1,18 @@
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/smartaggregator
+spring.datasource.username=YOUR_DB_USERNAME
+spring.datasource.password=YOUR_DB_PASSWORD
+
+# JPA/Hibernate
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+# JWT Configuration
+jwt.secret=YOUR_SECRET_KEY_AT_LEAST_256_BITS_LONG
+
+# API Keys
+alphavantage.api.key=YOUR_ALPHAVANTAGE_KEY
+coingecko.api.key=YOUR_COINGECKO_KEY
+
+# Server Configuration
+server.port=8080

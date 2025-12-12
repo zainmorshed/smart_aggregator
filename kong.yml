@@ -1,0 +1,35 @@
+_format_version: "3.0"
+
+services:
+  - name: springboot-api
+    url: http://host.docker.internal:8080
+    routes:
+      - name: summary-route
+        paths:
+          - /summary
+        strip_path: false
+        methods:
+          - GET
+          - POST
+        plugins:
+          - name: basic-auth
+
+plugins:
+  - name: basic-auth
+    service: springboot-api
+
+  - name: rate-limiting
+    service: springboot-api
+    config:
+      minute: 5            # Limit to 5 requests per minute
+      policy: local        # No Redis or DB needed (uses memory)
+      fault_tolerant: true # If plugin fails, requests still go through
+
+consumers:
+  - username: zain
+    custom_id: "1"
+    basicauth_credentials:
+      - username: zain
+        password: supersecret
+
+
