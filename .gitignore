@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Application properties with secrets
+application.properties
+application.yml
+
+# But keep a template
+!application.properties.template
