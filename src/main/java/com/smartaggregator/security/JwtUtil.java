@@ -1,5 +1,6 @@
 package com.smartaggregator.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -10,7 +11,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String SECRET_KEY = "mysecretkey";
+    @Value("${jwt.secret:mysecretkey}") // Reads from env, defaults to "mysecretkey"
+    private String SECRET_KEY;
 
     private final long EXPIRATION_TIME = 1000*60*60; //1 hour
 
