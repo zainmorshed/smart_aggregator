@@ -38,6 +38,7 @@ public class StockService {
                 "Company " + symbol.toUpperCase(), // Dummy name
                 price,
                 0.0, // change24h (use 0.0 for now)
+                0.0,
                 "neutral" // trend (calculate later if needed)
             );
 

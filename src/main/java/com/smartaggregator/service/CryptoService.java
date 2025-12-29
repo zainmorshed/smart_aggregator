@@ -63,7 +63,12 @@ public class CryptoService {
                 String trend = change24h >= 0 ? "up" : "down";
                 String name = "Crypto " + symbol.toUpperCase();
 
-                Crypto crypto = new Crypto(symbol.toUpperCase(), name, price, change24h, trend);
+                Crypto crypto = new Crypto();
+                crypto.setSymbol(symbol.toUpperCase());
+                crypto.setName(name);
+                crypto.setPrice(price);
+                crypto.setChange24h(change24h);
+                crypto.setTrend(trend);
                 cryptoList.add(crypto);
             } catch (Exception e) {
                 System.out.println("Failed to fetch crypto: " + symbol + " - " + e.getMessage());

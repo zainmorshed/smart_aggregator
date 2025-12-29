@@ -12,54 +12,71 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-
+    
     private final JwtUtil jwtUtil;
-
+    
+    // Public endpoints that don't need JWT
+    private static final List<String> PUBLIC_PATHS = List.of(
+        "/auth/",
+        "/users/",
+        "/holdings/",
+        "/summary",
+        "/portfolio/",
+        "/stocks/"
+    );
+    
     public JwtFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
-@Override
-protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain filterChain) throws ServletException, IOException {
-
-    System.out.println("=== JWT FILTER RUNNING ===");
-    System.out.println("Request URI: " + request.getRequestURI());
-    
-    String authHeader = request.getHeader("Authorization");
-    System.out.println("Auth Header: " + authHeader);
-
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-        String token = authHeader.substring(7);
-        System.out.println("Token extracted: " + token.substring(0, Math.min(20, token.length())) + "...");
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         
-        String username = jwtUtil.extractUsername(token);
-        System.out.println("Username from token: " + username);
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            boolean isValid = jwtUtil.isTokenValid(token, username);
-            System.out.println("Token valid: " + isValid);
-            
-            if (isValid) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        username, null, Collections.emptyList());
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("Authentication set in SecurityContext");
-            }
+        String requestURI = request.getRequestURI();
+        System.out.println("=== JWT FILTER RUNNING ===");
+        System.out.println("Request URI: " + requestURI);
+        
+        // Skip JWT validation for public endpoints
+        boolean isPublicPath = PUBLIC_PATHS.stream().anyMatch(requestURI::startsWith);
+        if (isPublicPath) {
+            System.out.println("Public path - skipping JWT validation");
+            filterChain.doFilter(request, response);
+            return;
         }
-    } else {
-        System.out.println("No Bearer token found");
+        
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("Auth Header: " + authHeader);
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            System.out.println("Token extracted: " + token.substring(0, Math.min(20, token.length())) + "...");
+            
+            String username = jwtUtil.extractUsername(token);
+            System.out.println("Username from token: " + username);
+            
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                boolean isValid = jwtUtil.isTokenValid(token, username);
+                System.out.println("Token valid: " + isValid);
+                
+                if (isValid) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            username, null, Collections.emptyList());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Authentication set in SecurityContext");
+                }
+            }
+        } else {
+            System.out.println("No Bearer token found");
+        }
+        
+        System.out.println("=== END JWT FILTER ===");
+        filterChain.doFilter(request, response);
     }
-
-    System.out.println("=== END JWT FILTER ===");
-    filterChain.doFilter(request, response);
-}
-
-
 }

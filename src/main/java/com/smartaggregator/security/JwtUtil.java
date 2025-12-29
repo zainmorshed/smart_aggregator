@@ -1,28 +1,31 @@
 package com.smartaggregator.security;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
-import java.util.function.Function;
+
+import java.security.Key;
 import java.util.Date;
+import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    @Value("${jwt.secret:mysecretkey}") // Reads from env, defaults to "mysecretkey"
-    private String SECRET_KEY;
 
-    private final long EXPIRATION_TIME = 1000*60*60; //1 hour
+    // Generate a 256-bit (32-byte) key. You can also store this as an env variable
+    private static final String SECRET = "a-very-long-secret-key-at-least-32-bytes!!";
+    private static final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
+
+    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
 
     public String generateToken(String username) {
         return Jwts.builder()
-        .setSubject(username)
-        .setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-        .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
-        .compact();
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public String extractUsername(String token) {
@@ -47,8 +50,9 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                    .setSigningKey(SECRET_KEY)
+                   .build()
                    .parseClaimsJws(token)
                    .getBody();
     }

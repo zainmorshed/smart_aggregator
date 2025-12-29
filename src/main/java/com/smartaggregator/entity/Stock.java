@@ -15,15 +15,32 @@ public class Stock {
     private String symbol;
     private String name;
     private double price;
+    private double quantity;
     private double change24h;
     private String trend;
 
-    public Stock(String symbol, String name, double price, double change24h, String trend) {
+    public Stock(String symbol, String name, double price, double quantity, double change24h, String trend) {
         this.symbol = symbol;
         this.name = name;
         this.price = price;
+        this.quantity = quantity;
         this.change24h = change24h;
         this.trend = trend;
+    }
+
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+
+    public double getQuantity() {
+        return quantity;
+    }
+
+
+    public void setQuantity(double quantity) {
+        this.quantity = quantity;
     }
 
 

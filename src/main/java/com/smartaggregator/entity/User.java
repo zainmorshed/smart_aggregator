@@ -9,7 +9,7 @@ import jakarta.persistence.*;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)  // JPA generates the UUID
+    @GeneratedValue(strategy = GenerationType.UUID) 
     private String id;
     private String name;
 
@@ -17,6 +17,8 @@ public class User {
     private List <String> stocks;
     @ElementCollection
     private List <String> cryptos;
+
+    
 
     public User(String id, String name, List<String> stocks, List<String> cryptos){
         this.id = id;
