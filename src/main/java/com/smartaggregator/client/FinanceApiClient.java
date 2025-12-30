@@ -11,8 +11,6 @@ import java.util.Map;
 public class FinanceApiClient {
 
     private final RestTemplate restTemplate;
-    
-    @Value("${api.finance.url}")
     private final String financeApiUrl;
 
     public FinanceApiClient(RestTemplate restTemplate,
