@@ -19,6 +19,6 @@ public class CryptoController {
 
     @GetMapping("/price")
     public CryptoPriceDTO getPrice(@RequestParam String coin) {
-        return cryptoService.getCryptoPrice(coin.toLowerCase());
+        return cryptoService.getCryptoPrice(coin);
     }
 }
