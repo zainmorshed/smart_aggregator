@@ -4,6 +4,8 @@ import com.smartaggregator.dto.CryptoPriceDTO;
 import com.smartaggregator.entity.Crypto;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,17 +18,24 @@ import java.util.List;
 public class CryptoService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+    
+    @Value("${coinmarketcap.api.key}")
+    private String apiKey;
 
-    public CryptoPriceDTO getCryptoPrice(String coinId) {
+    public CryptoPriceDTO getCryptoPrice(String symbol) {
+        // CoinMarketCap uses uppercase symbols (BTC, ETH, not bitcoin, ethereum)
+        String upperSymbol = symbol.toUpperCase();
+        
         String url = UriComponentsBuilder
-            .fromHttpUrl("https://api.coingecko.com/api/v3/simple/price")
-            .queryParam("ids", coinId)
-            .queryParam("vs_currencies", "usd")
+            .fromHttpUrl("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest")
+            .queryParam("symbol", upperSymbol)
+            .queryParam("convert", "USD")
             .toUriString();
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.set("User-Agent", "Mozilla/5.0"); // Prevent 403 error
+            headers.set("X-CMC_PRO_API_KEY", apiKey); // CoinMarketCap requires this header
+            headers.set("Accept", "application/json");
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -39,16 +48,19 @@ public class CryptoService {
 
             String jsonString = response.getBody();
             JSONObject json = new JSONObject(jsonString);
-
-            if (!json.has(coinId)) {
-                throw new RuntimeException("Coin not found: " + coinId);
-            }
-
-            double price = json.getJSONObject(coinId).getDouble("usd");
-            return new CryptoPriceDTO(coinId, price);
+            
+            // CoinMarketCap response structure:
+            // {"data": {"BTC": {"quote": {"USD": {"price": 95000.0}}}}}
+            JSONObject data = json.getJSONObject("data");
+            JSONObject coinData = data.getJSONObject(upperSymbol);
+            JSONObject quote = coinData.getJSONObject("quote");
+            JSONObject usd = quote.getJSONObject("USD");
+            double price = usd.getDouble("price");
+            
+            return new CryptoPriceDTO(upperSymbol, price);
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch crypto price: " + e.getMessage());
+            throw new RuntimeException("Failed to fetch crypto price for " + symbol + ": " + e.getMessage());
         }
     }
 
@@ -59,8 +71,8 @@ public class CryptoService {
             try {
                 CryptoPriceDTO dto = getCryptoPrice(symbol);
                 double price = dto.getPrice();
-                double change24h = 2.5; // placeholder
-                String trend = change24h >= 0 ? "up" : "down";
+                double change24h = 0.0; // You can get this from CoinMarketCap response too
+                String trend = "neutral";
                 String name = "Crypto " + symbol.toUpperCase();
 
                 Crypto crypto = new Crypto();
