@@ -1,0 +1,40 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: dev
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/smartaggregator}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: ${PORT:10000}
+
+debug: false
+
+jwt:
+  secret: ${JWT_SECRET:local-dev-secret-key-change-in-production}
+
+api:
+  finance:
+    url: ${API_FINANCE_URL:http://localhost:8080}
+
+twelvedata:
+  api:
+    key: ${TWELVEDATA_API_KEY}
+
+coinmarketcap:
+  api:
+    key: ${COINMARKETCAP_API_KEY}
+
+gnews:
+  api:
+    key: ${GNEWS_API_KEY}
